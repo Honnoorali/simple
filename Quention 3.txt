@@ -1,0 +1,181 @@
+Simple solution for a real-time ticket booking software with critical section in C:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+
+#define SEATS 10
+
+int tickets[SEATS] = {0}; // Initially all seats are empty
+pthread_mutex_t lock;
+
+void *book_ticket(void *arg) {
+    int *seat = (int *)arg;
+    pthread_mutex_lock(&lock);
+    if (tickets[*seat] == 0) { // Seat is available
+        tickets[*seat] = 1; // Book the seat
+        printf("Seat %d booked successfully.\n", *seat);
+    } else {
+        printf("Seat %d is already booked.\n", *seat);
+    }
+    pthread_mutex_unlock(&lock);
+    pthread_exit(NULL);
+}
+
+int main() {
+    pthread_t tid[SEATS];
+    int seat_num[SEATS];
+    pthread_mutex_init(&lock, NULL);
+
+    // Create threads for each seat booking
+    for (int i = 0; i < SEATS; i++) {
+        seat_num[i] = i;
+        pthread_create(&tid[i], NULL, book_ticket, &seat_num[i]);
+    }
+
+    // Wait for all threads to complete
+    for (int i = 0; i < SEATS; i++) {
+        pthread_join(tid[i], NULL);
+    }
+
+    pthread_mutex_destroy(&lock);
+    return 0;
+}
+
+
+Real time based ticket booking software that can be accessed any number of people for booking or canceling with critical section in c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <stdbool.h>
+
+#define NUM_SEATS 50 // total number of seats available
+#define NUM_THREADS 10 // total number of threads that can access the system
+
+pthread_mutex_t mutex; // mutex to ensure only one thread can access critical section at a time
+int available_seats = NUM_SEATS; // initially, all seats are available
+
+void *book_ticket(void *arg) {
+    int thread_id = *(int *)arg; // thread ID
+    int num_tickets = rand() % 5 + 1; // number of tickets to book
+    bool success = false; // flag to track if booking was successful
+
+    // try to book tickets until successful
+    while (!success) {
+        pthread_mutex_lock(&mutex); // enter critical section
+
+        // check if enough seats are available
+        if (available_seats >= num_tickets) {
+            available_seats -= num_tickets; // book tickets
+            printf("Thread %d booked %d tickets.\n", thread_id, num_tickets);
+            success = true; // booking successful
+        }
+
+        pthread_mutex_unlock(&mutex); // exit critical section
+    }
+
+    return NULL;
+}
+
+void *cancel_ticket(void *arg) {
+    int thread_id = *(int *)arg; // thread ID
+    int num_tickets = rand() % 5 + 1; // number of tickets to cancel
+    bool success = false; // flag to track if cancellation was successful
+
+    // try to cancel tickets until successful
+    while (!success) {
+        pthread_mutex_lock(&mutex); // enter critical section
+
+        // check if tickets to cancel are valid
+        if (available_seats + num_tickets <= NUM_SEATS) {
+            available_seats += num_tickets; // cancel tickets
+            printf("Thread %d cancelled %d tickets.\n", thread_id, num_tickets);
+            success = true; // cancellation successful
+        }
+
+        pthread_mutex_unlock(&mutex); // exit critical section
+    }
+
+    return NULL;
+}
+
+int main() {
+    pthread_t threads[NUM_THREADS];
+
+    // initialize mutex
+    pthread_mutex_init(&mutex, NULL);
+
+    // create threads to book and cancel tickets
+    for (int i = 0; i < NUM_THREADS; i++) {
+        int *thread_id = malloc(sizeof(int));
+        *thread_id = i;
+
+        if (i % 2 == 0) {
+            pthread_create(&threads[i], NULL, book_ticket, thread_id);
+        } else {
+            pthread_create(&threads[i], NULL, cancel_ticket, thread_id);
+        }
+    }
+
+    // wait for all threads to finish
+    for (int i = 0; i < NUM_THREADS; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // destroy mutex
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+real time based ticket booking software that can be accessed any number of people for booking or canceling with race condition in c in ubuntu
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+// Shared variables
+int available_tickets = 10;
+pthread_mutex_t lock;
+
+// Booking function
+void* book_tickets(void* arg) {
+    int requested_tickets = *(int*)arg;
+    pthread_mutex_lock(&lock);
+    if (requested_tickets <= available_tickets) {
+        available_tickets -= requested_tickets;
+        printf("Successfully booked %d tickets.\n", requested_tickets);
+    } else {
+        printf("Sorry, only %d tickets available.\n", available_tickets);
+    }
+    pthread_mutex_unlock(&lock);
+    return NULL;
+}
+
+// Main function
+int main() {
+    // Initialize mutex lock
+    pthread_mutex_init(&lock, NULL);
+
+    // Create threads for ticket booking
+    pthread_t thread1, thread2;
+    int num_tickets1 = 3, num_tickets2 = 7;
+    pthread_create(&thread1, NULL, book_tickets, &num_tickets1);
+    pthread_create(&thread2, NULL, book_tickets, &num_tickets2);
+
+    // Wait for threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    // Destroy mutex lock
+    pthread_mutex_destroy(&lock);
+
+    return 0;
+}
+
+
+
+
